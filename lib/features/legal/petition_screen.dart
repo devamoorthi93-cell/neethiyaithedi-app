@@ -864,9 +864,17 @@ class _PetitionFormScreenState extends ConsumerState<PetitionFormScreen> {
                   'amount': PaymentConfig.petitionFeeInPaise,
                   'name': PaymentConfig.merchantName,
                   'description': 'Petition Fee - ${widget.petitionType ?? "General"}',
+                  'timeout': 300, // 5 minutes timeout
                   'prefill': {
-                    'contact': widget.currentUser?.phone ?? '',
-                    'email': widget.currentUser?.email ?? '',
+                    'contact': (widget.currentUser?.phone != null && widget.currentUser!.phone.isNotEmpty) 
+                        ? widget.currentUser!.phone 
+                        : '9999999999',
+                    'email': (widget.currentUser?.email != null && widget.currentUser!.email.isNotEmpty)
+                        ? widget.currentUser!.email
+                        : 'info@neethiyaithedi.com',
+                  },
+                  'external': {
+                    'wallets': ['paytm', 'gpay']
                   },
                   'theme': {'color': PaymentConfig.themeColor}
                 };
