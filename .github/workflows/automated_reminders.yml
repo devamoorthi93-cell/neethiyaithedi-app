@@ -1,0 +1,35 @@
+name: Automated Fee Reminders
+
+on:
+  schedule:
+    # 9:00 AM IST (3:30 AM UTC)
+    - cron: '30 3 * * *'
+    # 6:00 PM IST (12:30 PM UTC)
+    - cron: '30 12 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd backend/scripts
+          npm install
+
+      - name: Run reminder script
+        run: |
+          cd backend/scripts
+          node send_reminders.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TZ: "Asia/Kolkata"

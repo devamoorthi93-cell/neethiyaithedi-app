@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1040367289333",
+    "project_id": "neethiyaithedi-a2640",
+    "storage_bucket": "neethiyaithedi-a2640.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1040367289333:android:88620f4880350cf24796bc",
+        "android_client_info": {
+          "package_name": "com.neethiyaithedi.neethiyaithedi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpXUSpgLlBUp0qhKqBotZjGoEGiA5Mceo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

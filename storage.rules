@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to read/write their own files
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow anyone to upload to aadhaar_requests folder (for membership registration)
+    // Only allow image files up to 5MB
+    match /aadhaar_requests/{allPaths=**} {
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow read: if request.auth != null;
+    }
+    
+    // Admin access to all files
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
