@@ -7,11 +7,11 @@ class PaymentConfig {
   // ─── Mode ─────────────────────────────────────────────────────────
   /// Set to true to simulate payments without a real Razorpay key.
   /// Set to false and provide a real key for production.
-  static const bool useMockPayment = true;
+  static const bool useMockPayment = false;
 
   // ─── Razorpay API Key ─────────────────────────────────────────────
   // Replace with your real test key from Razorpay Dashboard when ready
-  static const String razorpayKey = 'rzp_test_YOUR_KEY_HERE';
+  static const String razorpayKey = 'rzp_test_SFtVAG2euB1t8P';
 
   // ─── Payment Amounts (INR) ────────────────────────────────────────
   static const double membershipFee = 100.0;  // Monthly membership

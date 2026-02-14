@@ -1435,6 +1435,42 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               ),
               ElevatedButton.icon(
                 onPressed: () async {
+                  final phone = member.phone;
+                  final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+                  final tamilMonth = [
+                    'ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',
+                    'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'
+                  ][DateTime.now().month - 1];
+                  
+                  final message = Uri.encodeComponent(
+                    "*நீதியைத் தேடி (Neethiyai Thedi)*\n\n" +
+                    "வணக்கம், ${member.name}. ${tamilMonth} மாதத்திற்கான உங்கள் சந்தா (₹100) இன்னும் செலுத்தப்படவில்லை. தயவுசெய்து விரைந்து செலுத்தவும்.\n\n" +
+                    "Greetings. Your monthly subscription for ${DateFormat('MMMM').format(DateTime.now())} is pending. Please pay at your earliest convenience."
+                  );
+                  
+                  final url = "https://wa.me/91$cleanPhone?text=$message";
+                  final uri = Uri.parse(url);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not launch WhatsApp'))
+                      );
+                    }
+                  }
+                },
+                icon: const Icon(Icons.chat_outlined, size: 18),
+                label: const Text('WHATSAPP'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF25D366),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
