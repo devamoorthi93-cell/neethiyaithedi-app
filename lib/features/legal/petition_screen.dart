@@ -14,10 +14,9 @@ import '../../core/payment_config.dart';
 import '../../models/user_model.dart';
 import '../../models/petition_record_model.dart';
 
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import '../../core/razorpay_web_helper.dart';
 
 enum RelationType { sonOf, wifeOf, daughterOf }
 
@@ -849,22 +848,15 @@ class _PetitionFormScreenState extends ConsumerState<PetitionFormScreen> {
               foregroundColor: PaymentConfig.useMockPayment ? Colors.white : null,
             ),
             onPressed: () {
-              Navigator.pop(ctx);
-              
               if (PaymentConfig.useMockPayment) {
-                // ── Mock Payment Simulation ──────────────────
+                Navigator.pop(ctx);
                 _simulateMockPayment(model, onPaySuccess);
               } else {
-                // ── Real Razorpay Checkout ────────────────────
-                _pendingPaymentModel = model;
-                _onPaymentSuccess = onPaySuccess;
-                
-                var options = {
+                final options = {
                   'key': PaymentConfig.razorpayKey,
                   'amount': PaymentConfig.petitionFeeInPaise,
                   'name': PaymentConfig.merchantName,
                   'description': 'Petition Fee - ${widget.petitionType ?? "General"}',
-                  'timeout': 300, // 5 minutes timeout
                   'prefill': {
                     'contact': (widget.currentUser?.phone != null && widget.currentUser!.phone.isNotEmpty) 
                         ? widget.currentUser!.phone 
@@ -878,16 +870,34 @@ class _PetitionFormScreenState extends ConsumerState<PetitionFormScreen> {
                   },
                   'theme': {'color': PaymentConfig.themeColor}
                 };
-                
-                try {
-                  _razorpay.open(options);
-                } catch (e) {
-                  debugPrint('Error opening Razorpay: $e');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error opening payment: $e'), backgroundColor: Colors.red),
+
+                if (kIsWeb) {
+                  // ── Web Interop Checkout ────────────────────
+                  final webHelper = RazorpayWebHelper(
+                    onPaymentSuccess: (paymentId, orderId, signature) {
+                      _handlePaymentSuccess(PaymentSuccessResponse(paymentId, orderId, signature));
+                    },
+                    onPaymentError: (error) {
+                      _handlePaymentError(PaymentFailureResponse(1, error, {}));
+                    },
                   );
-                  _pendingPaymentModel = null;
-                  _onPaymentSuccess = null;
+                  webHelper.open(options);
+                  Navigator.pop(ctx);
+                } else {
+                  // ── Native Mobile Checkout ──────────────────
+                  _pendingPaymentModel = model;
+                  _onPaymentSuccess = onPaySuccess;
+                  try {
+                    _razorpay.open(options);
+                    Navigator.pop(ctx);
+                  } catch (e) {
+                    debugPrint('Error opening Razorpay: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error opening payment: $e'), backgroundColor: Colors.red),
+                    );
+                    _pendingPaymentModel = null;
+                    _onPaymentSuccess = null;
+                  }
                 }
               }
             },

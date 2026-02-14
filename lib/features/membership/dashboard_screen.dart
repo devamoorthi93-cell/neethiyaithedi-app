@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/foundation.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../../core/razorpay_web_helper.dart';
 import '../../core/payment_config.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/app_theme.dart';
@@ -180,18 +182,32 @@ class _MemberDashboardState extends ConsumerState<MemberDashboard> {
       }
     };
 
-    try {
-      setState(() => _isProcessingPayment = true);
-      _razorpay.open(options);
-    } catch (e) {
-      debugPrint('Error opening Razorpay: $e');
-      if (mounted) setState(() => _isProcessingPayment = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error opening payment gateway: $e'),
-          backgroundColor: Colors.red,
-        ),
+    if (kIsWeb) {
+      final webHelper = RazorpayWebHelper(
+        onPaymentSuccess: (paymentId, orderId, signature) {
+          _handlePaymentSuccess(PaymentSuccessResponse(paymentId, orderId, signature));
+        },
+        onPaymentError: (error) {
+          debugPrint('Razorpay Web Error: $error');
+          if (mounted) setState(() => _isProcessingPayment = false);
+          _handlePaymentError(PaymentFailureResponse(1, error, {}));
+        },
       );
+      webHelper.open(options);
+    } else {
+      try {
+        setState(() => _isProcessingPayment = true);
+        _razorpay.open(options);
+      } catch (e) {
+        debugPrint('Error opening Razorpay: $e');
+        if (mounted) setState(() => _isProcessingPayment = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening payment gateway: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -459,10 +475,23 @@ class _MemberDashboardState extends ConsumerState<MemberDashboard> {
       'theme': {'color': '#1A1A2E'}
     };
 
-    try {
-      setState(() => _isProcessingPayment = true);
-      _razorpay.open(options);
-    } catch (e) {
+    if (kIsWeb) {
+      final webHelper = RazorpayWebHelper(
+        onPaymentSuccess: (paymentId, orderId, signature) {
+          _handlePaymentSuccess(PaymentSuccessResponse(paymentId, orderId, signature));
+        },
+        onPaymentError: (error) {
+          debugPrint('Razorpay Donation Web Error: $error');
+          if (mounted) setState(() => _isProcessingPayment = false);
+          _handlePaymentError(PaymentFailureResponse(1, error, {}));
+        },
+      );
+      webHelper.open(options);
+    } else {
+      try {
+        setState(() => _isProcessingPayment = true);
+        _razorpay.open(options);
+      } catch (e) {
       if (mounted) setState(() => _isProcessingPayment = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
     }

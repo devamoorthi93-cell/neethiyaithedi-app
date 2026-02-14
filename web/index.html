@@ -24,6 +24,30 @@
 
 <body>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <script>
+    function openRazorpayCheckout(options, dotnetHelper) {
+      console.log('Opening Razorpay Checkout via JS Interop...');
+      options.handler = function (response) {
+        console.log('Payment Successful:', response.razorpay_payment_id);
+        dotnetHelper.onPaymentSuccess(response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
+      };
+      options.modal = {
+        ondismiss: function () {
+          console.log('Payment Dismissed');
+          dotnetHelper.onPaymentError('Payment cancelled by user');
+        }
+      };
+
+      var rzp = new Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        console.error('Payment Failed:', response.error.description);
+        dotnetHelper.onPaymentError(response.error.description);
+      });
+      rzp.open();
+    }
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 
